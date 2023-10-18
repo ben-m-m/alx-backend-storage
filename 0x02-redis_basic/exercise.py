@@ -5,6 +5,7 @@ class Cache
 import redis
 import uuid
 from typing import Union, Callable, Any, Optional
+from functools import wraps
 
 
 class Cache:
@@ -34,3 +35,12 @@ class Cache:
     def get_int(self, key: str) -> int:
         """gets data from redis as an int"""
         return self.get(key, int)
+
+    def count_calls(method: Callable) -> Callable:
+        """counts calls decorator"""
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            """wrapper function"""
+            self._redis.incr(method.__qualname__)
+            return method(self, *args, **kwargs)
+        return wrapper
